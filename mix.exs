@@ -16,16 +16,8 @@ defmodule CiscoSNMP.Mixfile do
 
   defp deps do
     [
-      {   
-        :net_snmp_ex,
-        git: "https://github.com/jonnystorm/net-snmp-elixir.git",
-        ref: "56ee97f65c"
-      },  
-      {   
-        :snmp_mib_ex,
-        git: "https://github.com/jonnystorm/snmp-mib-elixir.git",
-        ref: "efd4dcc17e"
-      }
+      {:net_snmp_ex, git: "https://github.com/jonnystorm/net-snmp-elixir.git"},  
+      {:snmp_mib_ex, git: "https://github.com/jonnystorm/snmp-mib-elixir.git"}
     ]
   end
 end

@@ -4,18 +4,17 @@
 # as published by Sam Hocevar. See the COPYING.WTFPL file for more details.
 
 defmodule CiscoSNMP do
-  alias SNMPMIB.Cisco.CiscoConfigCopy, as: CiscoConfigCopy
-  alias CiscoConfigCopy.CcCopyEntry, as: CcCopyEntry
+  alias CiscoConfigCopyMIB.CcCopyEntry, as: CcCopyEntry
 
   defp get_copy_state(row, agent, credential) do
     result = CcCopyEntry.ccCopyState
-      |> NetSNMP.index(row)
+      |> SNMPMIB.index(row)
       |> NetSNMP.get(agent, credential)
 
     case result do
       [ok: copy_state_object] ->
         copy_state_object
-          |> NetSNMP.Object.value
+          |> SNMPMIB.Object.value
           |> String.to_integer
       [error: _] ->
         nil
@@ -24,13 +23,13 @@ defmodule CiscoSNMP do
 
   defp get_copy_fail_cause(row, agent, credential) do
     result = CcCopyEntry.ccCopyFailCause
-      |> NetSNMP.index(row)
+      |> SNMPMIB.index(row)
       |> NetSNMP.get(agent, credential)
 
     case result do
       [ok: copy_fail_cause_object] ->
         copy_fail_cause_object
-          |> NetSNMP.Object.value
+          |> SNMPMIB.Object.value
           |> String.to_integer
       [error: _] ->
         nil
@@ -54,20 +53,20 @@ defmodule CiscoSNMP do
 
   defp destroy_copy_entry_row(row, agent, credential) do
     [ok: _] = CcCopyEntry.ccCopyEntryRowStatus
-      |> NetSNMP.index(row)
-      |> NetSNMP.Object.value(6)
+      |> SNMPMIB.index(row)
+      |> SNMPMIB.Object.value(6)
       |> NetSNMP.set(agent, credential)
   end
 
   defp create_copy_entry_row(copy_entry, row, agent, credential) do
     [
-      copy_entry |> CcCopyEntry.ccCopyProtocol |> NetSNMP.index(row),
-      CcCopyEntry.ccCopySourceFileType(copy_entry) |> NetSNMP.index(row),
-      CcCopyEntry.ccCopyDestFileType(copy_entry) |> NetSNMP.index(row),
-      CcCopyEntry.ccCopyFileName(copy_entry) |> NetSNMP.index(row),
-      CcCopyEntry.ccCopyServerAddressType(copy_entry) |> NetSNMP.index(row),
-      CcCopyEntry.ccCopyServerAddressRev1(copy_entry) |> NetSNMP.index(row),
-      CcCopyEntry.ccCopyEntryRowStatus(copy_entry) |> NetSNMP.index(row)
+      copy_entry |> CcCopyEntry.ccCopyProtocol |> SNMPMIB.index(row),
+      CcCopyEntry.ccCopySourceFileType(copy_entry) |> SNMPMIB.index(row),
+      CcCopyEntry.ccCopyDestFileType(copy_entry) |> SNMPMIB.index(row),
+      CcCopyEntry.ccCopyFileName(copy_entry) |> SNMPMIB.index(row),
+      CcCopyEntry.ccCopyServerAddressType(copy_entry) |> SNMPMIB.index(row),
+      CcCopyEntry.ccCopyServerAddressRev1(copy_entry) |> SNMPMIB.index(row),
+      CcCopyEntry.ccCopyEntryRowStatus(copy_entry) |> SNMPMIB.index(row)
     ] |> NetSNMP.set(agent, credential)
 
     row
@@ -76,7 +75,7 @@ defmodule CiscoSNMP do
   def copy_tftp_run(tftp_server, file, agent, credential) do
     row = 800
     
-    CiscoConfigCopy.cc_copy_entry(:tftp,
+    CiscoConfigCopyMIB.cc_copy_entry(:tftp,
       :network_file, :running_config, file,
       :ipv4, tftp_server
     ) |> create_copy_entry_row(row, agent, credential)
