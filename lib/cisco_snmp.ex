@@ -4,7 +4,7 @@
 # as published by Sam Hocevar. See the COPYING.WTFPL file for more details.
 
 defmodule CiscoSNMP do
-  alias CiscoConfigCopyMIB.CcCopyEntry, as: CcCopyEntry
+  alias CiscoConfigCopy.CcCopyEntry, as: CcCopyEntry
 
   defp get_copy_state(row, agent, credential) do
     result = CcCopyEntry.ccCopyState
@@ -75,7 +75,7 @@ defmodule CiscoSNMP do
   def copy_tftp_run(tftp_server, file, agent, credential) do
     row = 800
     
-    CiscoConfigCopyMIB.cc_copy_entry(:tftp,
+    CiscoConfigCopy.cc_copy_entry(:tftp,
       :network_file, :running_config, file,
       :ipv4, tftp_server
     ) |> create_copy_entry_row(row, agent, credential)
