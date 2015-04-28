@@ -36,19 +36,26 @@ defmodule CiscoSNMP do
     end
   end
 
-  defp await_copy_result(row, agent, credential) do
+  defp _await_copy_result(row, agent, credential, tries) do
     case get_copy_state(row, agent, credential) do
       3 ->
         :ok
       4 ->
         fail_cause = get_copy_fail_cause(row, agent, credential)
-          |> CcCopyEntry.typeConfigCopyFailCause
+          |> CiscoConfigCopy.typeConfigCopyFailCause
 
         {:error, fail_cause}
       _ ->
-        :timer.sleep 500 
-        await_copy_result(row, agent, credential)
+        if tries < 3 do
+          :timer.sleep 500 
+          _await_copy_result(row, agent, credential, tries + 1)
+        else
+          {:error, :timeout}
+        end
     end 
+  end
+  defp await_copy_result(row, agent, credential) do
+    _await_copy_result(row, agent, credential, 0)
   end
 
   defp destroy_copy_entry_row(row, agent, credential) do
@@ -79,7 +86,7 @@ defmodule CiscoSNMP do
       :network_file, :running_config, file,
       :ipv4, tftp_server
     ) |> create_copy_entry_row(row, agent, credential)
-    
+
     :ok = await_copy_result(row, agent, credential)
     destroy_copy_entry_row(row, agent, credential)
   end
