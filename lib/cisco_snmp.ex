@@ -79,15 +79,27 @@ defmodule CiscoSNMP do
     row
   end
 
-  def copy_tftp_run(tftp_server, file, agent, credential) do
+  defp process_copy_entry(copy_entry, agent, credential) do
     row = 800
-    
+    copy_entry |> create_copy_entry_row(row, agent, credential)
+    :ok = await_copy_result(row, agent, credential)
+    destroy_copy_entry_row(row, agent, credential)
+  end
+
+  def copy_tftp_run(tftp_server, file, agent, credential) do
     CiscoConfigCopy.cc_copy_entry(:tftp,
       :network_file, :running_config, file,
       :ipv4, tftp_server
-    ) |> create_copy_entry_row(row, agent, credential)
+    ) |> process_copy_entry(agent, credential)
+  end
 
-    :ok = await_copy_result(row, agent, credential)
-    destroy_copy_entry_row(row, agent, credential)
+  def copy_run_start(agent, credential) do
+    CiscoConfigCopy.cc_copy_entry(:running_config, :startup_config)
+      |> process_copy_entry(agent, credential)
+  end
+
+  def copy_start_run(agent, credential) do
+    CiscoConfigCopy.cc_copy_entry(:startup_config, :running_config)
+      |> process_copy_entry(agent, credential)
   end
 end
