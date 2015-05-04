@@ -65,29 +65,34 @@ defmodule CiscoSNMP do
       |> NetSNMP.set(agent, credential)
   end
 
-  defp copy_entry_to_objects(copy_entry, row) do
-    case (copy_entry |> CcCopyEntry.ccCopyFileName |> SNMPMIB.Object.value) do
-      "" ->
-        [
-          copy_entry |> CcCopyEntry.ccCopySourceFileType |> SNMPMIB.index(row),
-          copy_entry |> CcCopyEntry.ccCopyDestFileType |> SNMPMIB.index(row)
-        ]
-      _ ->
-        [
-          copy_entry |> CcCopyEntry.ccCopyProtocol |> SNMPMIB.index(row),
-          copy_entry |> CcCopyEntry.ccCopySourceFileType |> SNMPMIB.index(row),
-          copy_entry |> CcCopyEntry.ccCopyDestFileType |> SNMPMIB.index(row),
-          copy_entry |> CcCopyEntry.ccCopyFileName |> SNMPMIB.index(row),
-          copy_entry |> CcCopyEntry.ccCopyServerAddressType |> SNMPMIB.index(row),
-          copy_entry |> CcCopyEntry.ccCopyServerAddressRev1 |> SNMPMIB.index(row)
-        ]
-    end
+  defp has_an_empty_ccCopyFileName_value(copy_entry) do
+    (copy_entry |> CcCopyEntry.ccCopyFileName |> SNMPMIB.Object.value) == ""
   end
 
-  defp create_copy_entry_row(copy_entry, row, agent, credential) do
-    copy_entry
-      |> copy_entry_to_objects(row)
-      |> NetSNMP.set(agent, credential)
+  defp to_objects_for_ram_copy(copy_entry, row) do
+    [
+      copy_entry |> CcCopyEntry.ccCopySourceFileType |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopyDestFileType |> SNMPMIB.index(row)
+    ]
+  end
+
+  defp to_objects_for_non_ram_copy(copy_entry, row) do
+    [
+      copy_entry |> CcCopyEntry.ccCopyProtocol |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopySourceFileType |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopyDestFileType |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopyFileName |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopyServerAddressType |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopyServerAddressRev1 |> SNMPMIB.index(row)
+    ]
+  end
+
+  defp to_objects(copy_entry, row) do
+    if (copy_entry |> has_an_empty_ccCopyFileName_value) do
+      copy_entry |> to_objects_for_ram_copy(row)
+    else
+      copy_entry |> to_objects_for_non_ram_copy(row)
+    end
   end
 
   defp set_copy_entry_row_status(copy_entry, row, agent, credential) do
@@ -99,7 +104,7 @@ defmodule CiscoSNMP do
 
   defp process_copy_entry(copy_entry, agent, credential) do
     row = 800
-    copy_entry |> create_copy_entry_row(row, agent, credential)
+    copy_entry |> to_objects(row) |> NetSNMP.set(agent, credential)
     copy_entry |> set_copy_entry_row_status(row, agent, credential)
     :ok = await_copy_result(row, agent, credential)
     destroy_copy_entry_row(row, agent, credential)
