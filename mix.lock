@@ -1,3 +1,3 @@
-%{"cisco_config_copy_ex": {:git, "https://github.com/jonnystorm/cisco-config-copy-elixir", "14c6c70164f6ea0c67e6eb8469e44991d6590af3", []},
+%{"cisco_config_copy_ex": {:git, "https://github.com/jonnystorm/cisco-config-copy-elixir", "6dfc64f4efea0dea9235612ebb997f895d983e43", []},
   "net_snmp_ex": {:git, "https://github.com/jonnystorm/net-snmp-elixir", "cbe660d08063a53b79982ee7e8238ef3b3f26033", []},
   "snmp_mib_ex": {:git, "https://github.com/jonnystorm/snmp-mib-elixir", "066a5fdb6e5bfa6a0ac2d95832dac04bac84a634", []}}
