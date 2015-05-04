@@ -16,8 +16,8 @@ defmodule CiscoSNMP do
         copy_state_object
           |> SNMPMIB.Object.value
           |> String.to_integer
-      [error: _] ->
-        nil
+      [error: error] ->
+        error
     end
   end
 
@@ -45,12 +45,12 @@ defmodule CiscoSNMP do
           |> CiscoConfigCopy.typeConfigCopyFailCause
 
         {:error, fail_cause}
-      _ ->
+      error ->
         if tries < 3 do
           :timer.sleep 500 
           _await_copy_result(row, agent, credential, tries + 1)
         else
-          {:error, :timeout}
+          {:error, error}
         end
     end 
   end
@@ -65,16 +65,20 @@ defmodule CiscoSNMP do
       |> NetSNMP.set(agent, credential)
   end
 
-  defp create_copy_entry_row(copy_entry, row, agent, credential) do
+  def create_copy_entry_row(copy_entry, row, agent, credential) do
     [
       copy_entry |> CcCopyEntry.ccCopyProtocol |> SNMPMIB.index(row),
-      CcCopyEntry.ccCopySourceFileType(copy_entry) |> SNMPMIB.index(row),
-      CcCopyEntry.ccCopyDestFileType(copy_entry) |> SNMPMIB.index(row),
-      CcCopyEntry.ccCopyFileName(copy_entry) |> SNMPMIB.index(row),
-      CcCopyEntry.ccCopyServerAddressType(copy_entry) |> SNMPMIB.index(row),
-      CcCopyEntry.ccCopyServerAddressRev1(copy_entry) |> SNMPMIB.index(row),
-      CcCopyEntry.ccCopyEntryRowStatus(copy_entry) |> SNMPMIB.index(row)
+      copy_entry |> CcCopyEntry.ccCopySourceFileType |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopyDestFileType |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopyFileName |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopyServerAddressType |> SNMPMIB.index(row),
+      copy_entry |> CcCopyEntry.ccCopyServerAddressRev1 |> SNMPMIB.index(row),
     ] |> NetSNMP.set(agent, credential)
+
+    copy_entry
+      |> CcCopyEntry.ccCopyEntryRowStatus
+      |> SNMPMIB.index(row)
+      |> NetSNMP.set(agent, credential)
 
     row
   end
