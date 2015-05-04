@@ -65,27 +65,42 @@ defmodule CiscoSNMP do
       |> NetSNMP.set(agent, credential)
   end
 
-  def create_copy_entry_row(copy_entry, row, agent, credential) do
-    [
-      copy_entry |> CcCopyEntry.ccCopyProtocol |> SNMPMIB.index(row),
-      copy_entry |> CcCopyEntry.ccCopySourceFileType |> SNMPMIB.index(row),
-      copy_entry |> CcCopyEntry.ccCopyDestFileType |> SNMPMIB.index(row),
-      copy_entry |> CcCopyEntry.ccCopyFileName |> SNMPMIB.index(row),
-      copy_entry |> CcCopyEntry.ccCopyServerAddressType |> SNMPMIB.index(row),
-      copy_entry |> CcCopyEntry.ccCopyServerAddressRev1 |> SNMPMIB.index(row),
-    ] |> NetSNMP.set(agent, credential)
+  defp copy_entry_to_objects(copy_entry, row) do
+    case (copy_entry |> CcCopyEntry.ccCopyFileName |> SNMPMIB.Object.value) do
+      "" ->
+        [
+          copy_entry |> CcCopyEntry.ccCopySourceFileType |> SNMPMIB.index(row),
+          copy_entry |> CcCopyEntry.ccCopyDestFileType |> SNMPMIB.index(row)
+        ]
+      _ ->
+        [
+          copy_entry |> CcCopyEntry.ccCopyProtocol |> SNMPMIB.index(row),
+          copy_entry |> CcCopyEntry.ccCopySourceFileType |> SNMPMIB.index(row),
+          copy_entry |> CcCopyEntry.ccCopyDestFileType |> SNMPMIB.index(row),
+          copy_entry |> CcCopyEntry.ccCopyFileName |> SNMPMIB.index(row),
+          copy_entry |> CcCopyEntry.ccCopyServerAddressType |> SNMPMIB.index(row),
+          copy_entry |> CcCopyEntry.ccCopyServerAddressRev1 |> SNMPMIB.index(row)
+        ]
+    end
+  end
 
+  defp create_copy_entry_row(copy_entry, row, agent, credential) do
+    copy_entry
+      |> copy_entry_to_objects(row)
+      |> NetSNMP.set(agent, credential)
+  end
+
+  defp set_copy_entry_row_status(copy_entry, row, agent, credential) do
     copy_entry
       |> CcCopyEntry.ccCopyEntryRowStatus
       |> SNMPMIB.index(row)
       |> NetSNMP.set(agent, credential)
-
-    row
   end
 
   defp process_copy_entry(copy_entry, agent, credential) do
     row = 800
     copy_entry |> create_copy_entry_row(row, agent, credential)
+    copy_entry |> set_copy_entry_row_status(row, agent, credential)
     :ok = await_copy_result(row, agent, credential)
     destroy_copy_entry_row(row, agent, credential)
   end
