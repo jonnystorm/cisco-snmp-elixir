@@ -8,14 +8,14 @@ defmodule CiscoSNMP do
 
   defp get_copy_state(row, agent, credential) do
     result = CcCopyEntry.ccCopyState
-      |> SNMPMIB.index(row)
-      |> NetSNMP.get(agent, credential)
+    |> SNMPMIB.index(row)
+    |> NetSNMP.get(agent, credential)
 
     case result do
       [ok: copy_state_object] ->
         copy_state_object
-          |> SNMPMIB.Object.value
-          |> String.to_integer
+        |> SNMPMIB.Object.value
+        |> String.to_integer
       [error: error] ->
         error
     end
@@ -23,14 +23,14 @@ defmodule CiscoSNMP do
 
   defp get_copy_fail_cause(row, agent, credential) do
     result = CcCopyEntry.ccCopyFailCause
-      |> SNMPMIB.index(row)
-      |> NetSNMP.get(agent, credential)
+    |> SNMPMIB.index(row)
+    |> NetSNMP.get(agent, credential)
 
     case result do
       [ok: copy_fail_cause_object] ->
         copy_fail_cause_object
-          |> SNMPMIB.Object.value
-          |> String.to_integer
+        |> SNMPMIB.Object.value
+        |> String.to_integer
       [error: _] ->
         nil
     end
@@ -42,7 +42,7 @@ defmodule CiscoSNMP do
         :ok
       4 ->
         fail_cause = get_copy_fail_cause(row, agent, credential)
-          |> CiscoConfigCopy.typeConfigCopyFailCause
+        |> CiscoConfigCopy.typeConfigCopyFailCause
 
         {:error, fail_cause}
       error ->
@@ -60,9 +60,9 @@ defmodule CiscoSNMP do
 
   defp destroy_copy_entry_row(row, agent, credential) do
     [ok: _] = CcCopyEntry.ccCopyEntryRowStatus
-      |> SNMPMIB.index(row)
-      |> SNMPMIB.Object.value(6)
-      |> NetSNMP.set(agent, credential)
+    |> SNMPMIB.index(row)
+    |> SNMPMIB.Object.value(6)
+    |> NetSNMP.set(agent, credential)
   end
 
   defp has_an_empty_ccCopyFileName_value(copy_entry) do
@@ -97,9 +97,9 @@ defmodule CiscoSNMP do
 
   defp set_copy_entry_row_status(copy_entry, row, agent, credential) do
     copy_entry
-      |> CcCopyEntry.ccCopyEntryRowStatus
-      |> SNMPMIB.index(row)
-      |> NetSNMP.set(agent, credential)
+    |> CcCopyEntry.ccCopyEntryRowStatus
+    |> SNMPMIB.index(row)
+    |> NetSNMP.set(agent, credential)
   end
 
   defp process_copy_entry(copy_entry, agent, credential) do
@@ -119,11 +119,11 @@ defmodule CiscoSNMP do
 
   def copy_run_start(agent, credential) do
     CiscoConfigCopy.cc_copy_entry(:running_config, :startup_config)
-      |> process_copy_entry(agent, credential)
+    |> process_copy_entry(agent, credential)
   end
 
   def copy_start_run(agent, credential) do
     CiscoConfigCopy.cc_copy_entry(:startup_config, :running_config)
-      |> process_copy_entry(agent, credential)
+    |> process_copy_entry(agent, credential)
   end
 end
