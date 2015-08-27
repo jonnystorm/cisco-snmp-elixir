@@ -118,7 +118,7 @@ defmodule CiscoSNMP do
 
       :ok
     after
-      [{:ok, _}] = destroy_copy_entry_row(row, agent, credential)
+      destroy_copy_entry_row(row, agent, credential)
     end
   end
 
