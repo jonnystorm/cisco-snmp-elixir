@@ -13,9 +13,7 @@ defmodule CiscoSNMP do
 
     case result do
       [ok: copy_state_object] ->
-        copy_state_object
-        |> SNMPMIB.Object.value
-        |> String.to_integer
+        SNMPMIB.Object.value(copy_state_object)
       [error: error] ->
         error
     end
@@ -28,9 +26,7 @@ defmodule CiscoSNMP do
 
     case result do
       [ok: copy_fail_cause_object] ->
-        copy_fail_cause_object
-        |> SNMPMIB.Object.value
-        |> String.to_integer
+        SNMPMIB.Object.value(copy_fail_cause_object)
       [error: _] ->
         nil
     end
@@ -47,19 +43,19 @@ defmodule CiscoSNMP do
         {:error, fail_cause}
       error ->
         if tries < 3 do
-          :timer.sleep 500 
+          :timer.sleep 500
           _await_copy_result(row, agent, credential, tries + 1)
         else
           {:error, error}
         end
-    end 
+    end
   end
   defp await_copy_result(row, agent, credential) do
     _await_copy_result(row, agent, credential, 0)
   end
 
   defp destroy_copy_entry_row(row, agent, credential) do
-    [ok: _] = CcCopyEntry.ccCopyEntryRowStatus
+    CcCopyEntry.ccCopyEntryRowStatus
     |> SNMPMIB.index(row)
     |> SNMPMIB.Object.value(6)
     |> NetSNMP.set(agent, credential)
@@ -88,11 +84,17 @@ defmodule CiscoSNMP do
   end
 
   defp to_objects(copy_entry, row) do
-    if (copy_entry |> has_an_empty_ccCopyFileName_value) do
-      copy_entry |> to_objects_for_ram_copy(row)
+    if has_an_empty_ccCopyFileName_value(copy_entry) do
+      to_objects_for_ram_copy(copy_entry, row)
     else
-      copy_entry |> to_objects_for_non_ram_copy(row)
+      to_objects_for_non_ram_copy(copy_entry, row)
     end
+  end
+
+  defp set_copy_entry_row(copy_entry, row, agent, credential) do
+    copy_entry
+    |> to_objects(row)
+    |> NetSNMP.set(agent, credential)
   end
 
   defp set_copy_entry_row_status(copy_entry, row, agent, credential) do
@@ -104,10 +106,20 @@ defmodule CiscoSNMP do
 
   defp process_copy_entry(copy_entry, agent, credential) do
     row = 800
-    copy_entry |> to_objects(row) |> NetSNMP.set(agent, credential)
-    copy_entry |> set_copy_entry_row_status(row, agent, credential)
-    :ok = await_copy_result(row, agent, credential)
-    destroy_copy_entry_row(row, agent, credential)
+
+    try do
+      [{:ok, _}, {:ok, _}|_] = copy_entry
+      |> set_copy_entry_row(row, agent, credential)
+
+      [{:ok, _}] = copy_entry
+      |> set_copy_entry_row_status(row, agent, credential)
+
+      :ok = await_copy_result(row, agent, credential)
+
+      :ok
+    after
+      [{:ok, _}] = destroy_copy_entry_row(row, agent, credential)
+    end
   end
 
   def copy_tftp_run(tftp_server, file, agent, credential) do
