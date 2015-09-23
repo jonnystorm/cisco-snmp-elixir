@@ -41,7 +41,7 @@ defmodule CiscoSNMP do
         |> CiscoConfigCopy.typeConfigCopyFailCause
 
         {:error, fail_cause}
-      error ->
+      _ ->
         if tries < 3 do
           :timer.sleep 500
           _await_copy_result(row, agent, credential, tries + 1)
