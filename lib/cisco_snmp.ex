@@ -46,7 +46,7 @@ defmodule CiscoSNMP do
           :timer.sleep 500
           _await_copy_result(row, agent, credential, tries + 1)
         else
-          {:error, error}
+          {:error, :timeout}
         end
     end
   end
