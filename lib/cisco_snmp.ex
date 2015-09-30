@@ -42,7 +42,7 @@ defmodule CiscoSNMP do
 
         {:error, fail_cause}
       _ ->
-        if tries < 3 do
+        if tries < 10 do
           :timer.sleep 500
           _await_copy_result(row, agent, credential, tries + 1)
         else
