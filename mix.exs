@@ -10,8 +10,22 @@ defmodule CiscoSNMP.Mixfile do
      deps: deps]
   end
 
-  def application do
+  defp get_application(:prod) do
+    [
+      applications: [
+        :logger,
+        :net_snmp_ex,
+        :cisco_config_copy_ex
+      ]
+    ]
+  end
+
+  defp get_application(_) do
     [applications: [:logger]]
+  end
+
+  def application do
+    get_application Mix.env
   end
 
   defp deps do
