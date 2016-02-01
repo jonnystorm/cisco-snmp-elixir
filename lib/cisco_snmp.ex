@@ -122,6 +122,13 @@ defmodule CiscoSNMP do
     end
   end
 
+  def copy_run_tftp(tftp_server, file, agent, credential) do
+    CiscoConfigCopy.cc_copy_entry(:tftp,
+      :running_config, :network_file, file,
+      :ipv4, tftp_server
+    ) |> process_copy_entry(agent, credential)
+  end
+
   def copy_tftp_run(tftp_server, file, agent, credential) do
     CiscoConfigCopy.cc_copy_entry(:tftp,
       :network_file, :running_config, file,
