@@ -1,6 +1,8 @@
-%{"amrita": {:git, "https://github.com/josephwilk/amrita", "f51ae5225fb77ed0238e29fc80dbfa95e77c3ceb", []},
-  "cisco_config_copy_ex": {:git, "https://github.com/jonnystorm/cisco-config-copy-elixir", "3ee6b302af924a068a8bf468f6d295a5ddf28f85", []},
+%{
+  "amrita": {:git, "https://github.com/josephwilk/amrita", "f51ae5225fb77ed0238e29fc80dbfa95e77c3ceb", []},
+  "cisco_config_copy_ex": {:git, "https://gitlab.com/jonnystorm/cisco-config-copy-elixir", "681dd7e63ce85ab5ff10f0038837e802013d1d47", []},
   "meck": {:git, "https://github.com/eproxus/meck", "0845277398b8326f9dddddd9fc3cf73467ba6877", [branch: "master"]},
-  "net_snmp_ex": {:git, "https://github.com/jonnystorm/net-snmp-elixir", "ea852a332f74f1e3adfa3d9d7076e9a4f26bc46a", []},
+  "net_snmp_ex": {:git, "https://gitlab.com/jonnystorm/net-snmp-elixir", "7a32a18a1b6285dbdc185e7f17a8866dc2f3a638", []},
   "pathname_ex": {:git, "https://github.com/jonnystorm/pathname-elixir", "121cc487ca09af60d856cc075bf128e48d00a73d", []},
-  "snmp_mib_ex": {:git, "https://github.com/jonnystorm/snmp-mib-elixir", "70902c6841bb48346115bfc2e83649ee51f91b0a", []}}
+  "snmp_mib_ex": {:git, "https://gitlab.com/jonnystorm/snmp-mib-elixir", "ab8d31187cacd1f573a0b574c18397f80e2d8207", []},
+}
